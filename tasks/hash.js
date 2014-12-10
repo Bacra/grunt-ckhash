@@ -14,21 +14,12 @@ module.exports = function(grunt) {
   var path = require('path');
   var getHash = require('../lib/hash');
 
-  // Please see the grunt documentation for more information regarding task and
-  // helper creation: https://github.com/gruntjs/grunt/blob/master/docs/toc.md
-
-  // ==========================================================================
-  // TASKS
-  // ==========================================================================
-
   grunt.registerMultiTask('hash', 'Append a unique hash to tne end of a file for cache busting.', function() {
     var options = this.options({
-      srcBasePath: "",
-      destBasePath: "",
-      flatten: false,
       hashLength: 8,
       hashFunction: getHash,
-      hashSeparator: '.'
+      hashSeparator: '.',
+      mapping: ''
     });
     var map = {};
     var mappingExt = path.extname(options.mapping);
@@ -39,33 +30,17 @@ module.exports = function(grunt) {
     }
 
     this.files.forEach(function(file) {
-      file.src.forEach(function(src) {
-        var source = grunt.file.read(src);
-        var hash = options.hashFunction(source, 'utf8').substr(0, options.hashLength);
-        var dirname = path.dirname(src);
-        var rootDir = path.relative(options.srcBasePath, dirname);
-        var ext = path.extname(src);
-        var basename = path.basename(src, ext);
+      var src = file.src[0];
+      if (!grunt.file.isFile(src)) return;
 
-        // Default destination to the same directory
-        var dest = file.dest || path.dirname(src);
+      var hash = options.hashFunction(grunt.file.read(src), 'utf8').substr(0, options.hashLength);
+      var ext = path.extname(src);
+      var basename = path.basename(src, ext);
+      var outputFile = path.join(path.dirname(file.dest), basename + (hash ? options.hashSeparator + hash : '') + ext);
 
-        var newFile = basename + (hash ? options.hashSeparator + hash : '') + ext;
-        var outputPath = path.join(path.dirname(dest), newFile);
-
-        // Determine if the key should be flatten or not. Also normalize the output path
-        var key = path.join(rootDir, path.basename(src));
-        var outKey = path.relative(options.destBasePath, outputPath);
-        if (options.flatten) {
-          key = path.basename(src);
-          outKey = path.basename(outKey);
-        }
-
-        grunt.file.copy(src, outputPath);
-        grunt.log.writeln('Generated: ' + outputPath);
-
-        map[unixify(key)] = unixify(outKey);
-      });
+      grunt.file.copy(src, outputFile);
+      grunt.log.writeln('Generated: ' + outputFile);
+      map[unixify(src)] = unixify(outputFile);
     });
 
     if (options.mapping) {
@@ -82,7 +57,5 @@ module.exports = function(grunt) {
     }
 
   });
-
-
 
 };
