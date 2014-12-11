@@ -28,6 +28,8 @@ module.exports = function(grunt) {
     if (mappingExt === '.json' && grunt.file.exists(options.mapping)) {
       map = grunt.file.readJSON(options.mapping);
     }
+    map.last = {};
+    map.all || (map.all = {});
 
     this.files.forEach(function(file) {
       var src = file.src[0];
@@ -40,7 +42,10 @@ module.exports = function(grunt) {
 
       grunt.file.copy(src, outputFile);
       grunt.log.writeln('Generated: ' + outputFile);
-      map[unixify(src)] = hash;
+
+      // map
+      map.last[unixify(src)] = hash;
+      map.all[unixify(src)] = hash;
     });
 
     if (options.mapping) {
