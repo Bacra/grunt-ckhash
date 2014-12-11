@@ -40,7 +40,7 @@ module.exports = function(grunt) {
 
       grunt.file.copy(src, outputFile);
       grunt.log.writeln('Generated: ' + outputFile);
-      map[unixify(src)] = unixify(outputFile);
+      map[unixify(src)] = hash;
     });
 
     if (options.mapping) {
