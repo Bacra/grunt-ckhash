@@ -5,14 +5,21 @@
  * Copyright (c) 2012 Greg Allen
  * Licensed under the MIT license.
  */
+var crypto = require('crypto');
 
 function unixify(path) {
   return path.split('\\').join('/');
 }
 
+function getHash(source, src) {
+  var md5sum = crypto.createHash('md5');
+  md5sum.update(source, 'utf8');
+
+  return md5sum.digest('hex');
+}
+
 module.exports = function(grunt) {
   var path = require('path');
-  var getHash = require('../lib/hash');
 
   grunt.registerMultiTask('hash', 'Append a unique hash to tne end of a file for cache busting.', function() {
     var options = this.options({
@@ -35,7 +42,7 @@ module.exports = function(grunt) {
       var src = file.src[0];
       if (!grunt.file.isFile(src)) return;
 
-      var hash = options.hashFunction(grunt.file.read(src), 'utf8').substr(0, options.hashLength);
+      var hash = options.hashFunction(grunt.file.read(src), src).substr(0, options.hashLength);
       var ext = path.extname(src);
       var basename = path.basename(src, ext);
       var outputFile = path.join(path.dirname(file.dest), basename + (hash ? options.hashSeparator + hash : '') + ext);
