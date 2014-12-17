@@ -6,10 +6,8 @@
  * Licensed under the MIT license.
  */
 var crypto = require('crypto');
+var path = require('path');
 
-function unixify(path) {
-  return path.split('\\').join('/');
-}
 
 function getHash(source, src) {
   var md5sum = crypto.createHash('md5');
@@ -19,7 +17,6 @@ function getHash(source, src) {
 }
 
 module.exports = function(grunt) {
-  var path = require('path');
 
   grunt.registerMultiTask('hash', 'Append a unique hash to tne end of a file for cache busting.', function() {
     var options = this.options({
@@ -51,8 +48,9 @@ module.exports = function(grunt) {
       grunt.log.writeln('Generated: ' + outputFile);
 
       // map
-      map.last[unixify(src)] = hash;
-      map.all[unixify(src)] = hash;
+      var srcKey = path.relative(file.orig.cwd || '', src).replace(/\\/g, '/');
+      map.last[srcKey] = hash;
+      map.all[srcKey] = hash;
     });
 
     if (options.mapping) {
