@@ -1,4 +1,1 @@
-node_modules/
-examples/test1.*.js
-examples/test1-*.js
-out
+node_modules
