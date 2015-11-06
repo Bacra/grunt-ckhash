@@ -10,10 +10,9 @@ var path = require('path');
 
 
 function getHash(source, src) {
-	var md5sum = crypto.createHash('md5');
-	md5sum.update(source, 'utf8');
-
-	return md5sum.digest('hex');
+	return crypto.createHash('md5')
+		.update(source, 'binary')
+		.digest('hex');
 }
 
 module.exports = function(grunt) {
@@ -33,7 +32,7 @@ module.exports = function(grunt) {
 			var src = file.src[0];
 			if (!src || !grunt.file.isFile(src)) return;
 
-			var hash = options.generate(grunt.file.read(src), src).substr(0, options.length);
+			var hash = options.generate(grunt.file.read(src, {encoding: 'binary'}), src).substr(0, options.length);
 			var ext = path.extname(src);
 			var basename = path.basename(src, ext);
 			var outputFile = path.join(path.dirname(file.dest), basename + (hash ? options.separator + hash : '') + ext);
