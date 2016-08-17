@@ -27,6 +27,7 @@ module.exports = function(grunt) {
 
 		grunt.hash || (grunt.hash = {});
 		var map = grunt.hash.map || (grunt.hash.map = {});
+		var IgnoreFileCount = 0, GenerateFileCount = 0;
 
 		this.files.forEach(function(file) {
 			var src = file.src[0];
@@ -38,16 +39,20 @@ module.exports = function(grunt) {
 			var outputFile = path.join(path.dirname(file.dest), basename + (hash ? options.separator + hash : '') + ext);
 
 			if (options.checkExists && grunt.file.exists(outputFile)) {
-				grunt.log.writeln('Ignore: %s', outputFile);
+				grunt.verbose.writeln('Ignore: %s', outputFile);
+				IgnoreFileCount++;
 			} else {
 				grunt.file.copy(src, outputFile);
-				grunt.log.writeln('Generated: %s', outputFile);
+				grunt.verbose.writeln('Generated: %s', outputFile);
+				GenerateFileCount++;
 			}
 
 			// map
 			var srcKey = path.relative(file.orig.cwd || '', src).replace(/\\/g, '/');
 			map[srcKey] = hash;
 		});
+
+		grunt.log.writeln('Ignore file:'+(''+IgnoreFileCount).green+' Generated file:'+(''+GenerateFileCount).green);
 
 	});
 };
